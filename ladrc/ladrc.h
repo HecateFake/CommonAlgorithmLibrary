@@ -126,12 +126,3 @@ void ladrcSetTarget(LADRC *obj, float target);
 void ladrcProcess(LADRC *obj, float y);
 
 #endif /* CODE_LADRC_H_ */
-**@param obj 指向包含控制器参数和状态的LADRC结构体的指针
-        *@param y 当前系统输出测量值
-            *
-                *@details 此函数执行LADRC控制算法的一次迭代，
-                    *根据当前测量值更新内部状态并计算控制输出。
-                        * /
-    void ladrcProcess(LADRC *obj, float y);
-
-#endif /* CODE_LADRC_H_ */

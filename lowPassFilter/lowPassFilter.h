@@ -61,4 +61,3 @@ void lowPassFilterInit(LowPassFilterData *obj, float alpha);
 void lowPassFilter(LowPassFilterData *obj, float value);
 
 #endif /* CODE_LOWPASSFILTER_H_ */
-#endif /* CODE_LOWPASSFILTER_H_ */

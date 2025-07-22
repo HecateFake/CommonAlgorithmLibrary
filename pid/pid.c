@@ -72,10 +72,14 @@ static void positionalPidProcess(PID *obj, float currentValue)
     // 积分累加
     obj->integral += obj->error;
 
-    if ((obj->ki * obj->integral) > obj->integralMax)
-        obj->integral = (obj->integralMax / obj->ki);
-    else if ((obj->ki * obj->integral) < -obj->integralMax)
-        obj->integral = -(obj->integralMax / obj->ki);
+    // 积分限幅 - 添加除零保护
+    if (obj->ki != 0.0f)
+    {
+        if ((obj->ki * obj->integral) > obj->integralMax)
+            obj->integral = (obj->integralMax / obj->ki);
+        else if ((obj->ki * obj->integral) < -obj->integralMax)
+            obj->integral = -(obj->integralMax / obj->ki);
+    }
 
     // 控制值计算
     obj->controlValue =
