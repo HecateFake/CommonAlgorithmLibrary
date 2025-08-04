@@ -24,11 +24,11 @@
  */
 typedef struct
 {
-        float alpha;
-        uint8_t firstFlag;
-        float lastOutput;
-        float filteredValue;
-        float changeRateMax;
+    float alpha;
+    uint8_t firstFlag;
+    float lastOutput;
+    float filteredValue;
+    float changeRateMax;
 } LowPassFilterData;
 
 /**

@@ -32,9 +32,9 @@ static void incrementalPidProcess(PID *obj, float currentValue)
 
     // 定义增量并计算
     float delta =
-        obj->kp * (obj->error - obj->lastError)                               // 比例
-        + obj->ki * obj->error                                                // 积分
-        + obj->kd * (obj->error - 2 * obj->lastError + obj->beforeLastError); // 微分
+        obj->kp * (obj->error - obj->lastError)                                // 比例
+        + obj->ki * obj->error                                                 // 积分
+        + obj->kd * (obj->error - 2 * obj->lastError + obj->beforeLastError);  // 微分
 
     // 增量累加为控制值
     obj->controlValue += delta;
@@ -83,9 +83,9 @@ static void positionalPidProcess(PID *obj, float currentValue)
 
     // 控制值计算
     obj->controlValue =
-        obj->kp * obj->error                       // 比例
-        + obj->ki * obj->integral                  // 积分
-        + obj->kd * (obj->error - obj->lastError); // 微分
+        obj->kp * obj->error                        // 比例
+        + obj->ki * obj->integral                   // 积分
+        + obj->kd * (obj->error - obj->lastError);  // 微分
 
     // 误差存储
     obj->lastError = obj->error;

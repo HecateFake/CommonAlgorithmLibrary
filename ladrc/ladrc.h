@@ -23,12 +23,12 @@
  */
 typedef struct
 {
-        float r;
-        float h;
-        float h0;
-        float x1;
-        float x2;
-        float firstFlag;
+    float r;
+    float h;
+    float h0;
+    float x1;
+    float x2;
+    float firstFlag;
 } TrackingDifferentiator;
 
 /**
@@ -52,19 +52,19 @@ typedef struct
  */
 typedef struct
 {
-        float target;
-        TrackingDifferentiator td;
-        float esoBeta1;
-        float esoBeta2;
-        float esoBeta3;
-        float esoZ1;
-        float esoZ2;
-        float esoZ3;
-        float delta;
-        float b;
-        float lsefKp;
-        float lsefKd;
-        float controlValue;
+    float target;
+    TrackingDifferentiator td;
+    float esoBeta1;
+    float esoBeta2;
+    float esoBeta3;
+    float esoZ1;
+    float esoZ2;
+    float esoZ3;
+    float delta;
+    float b;
+    float lsefKp;
+    float lsefKd;
+    float controlValue;
 } LADRC;
 
 // 函数声明

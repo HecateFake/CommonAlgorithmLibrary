@@ -55,8 +55,8 @@ void schmittInit(SchmittTrigger *obj, float upperThresh, float lowerThresh, uint
 
     // 设置初始状态
     obj->outputState = initState;
-    obj->lastOutputState = initState; // 上一次状态等于初始状态
-    obj->lastInputValue = 0.0f;       // 初始输入值
+    obj->lastOutputState = initState;  // 上一次状态等于初始状态
+    obj->lastInputValue = 0.0f;        // 初始输入值
 }
 
 /**
