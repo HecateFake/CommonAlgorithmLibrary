@@ -311,7 +311,7 @@ void twoPassEightConnectedAreaProcess(BEAINF* obj)
         labels[2] = (i < obj->data->width) ? 0 : g_labMap[i - obj->data->width];
         labels[3] = (i % obj->data->width == obj->data->width - 1 || i < obj->data->width) ? 0 : g_labMap[i - obj->data->width + 1];
         uint16_t validLabels[4] = {0};
-        uint16_t validCount = 0;
+        uint8_t validCount = 0;
 
         for (uint16_t k = 0; k < 4; k++)
             if (labels[k] != 0) validLabels[validCount++] = labels[k];
