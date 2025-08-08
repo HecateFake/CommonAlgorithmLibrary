@@ -14,7 +14,7 @@
 // 全局分配大数组，避免栈溢出
 static uint8_t g_morphBuffer[UNIFORMLY_PRE_ALLOCATED_BUFFER_SIZE];  // 形态学运算临时缓冲区
 static uint16_t g_labMap[UNIFORMLY_PRE_ALLOCATED_BUFFER_SIZE];
-static uint16_t g_labelEquivalence[1024];
+static uint16_t g_labelEquivalence[UNIFORMLY_PRE_ALLOCATED_BUFFER_SIZE];
 static SBEA g_tempBea[100];  // 全局临时BEA数组，避免栈分配
 
 void morphErode(CroppedImage8* src, CroppedImage8* kernel, CroppedImage8* dst, uint8_t background)
@@ -110,7 +110,7 @@ void toBinary(CroppedImage8* src, CroppedImage8* dst, uint8_t threshold)
 
 void toBinaryDoubleThreshold(CroppedImage8* src, CroppedImage8* dst, uint8_t thresholdUp, uint8_t thresholdDown)
 {
-    for (uint16_t i = 0; i < src->width * src->height; i++) dst->data[i] = ((src->data[i] < thresholdDown) ? BLACK : ((src->data[i] < thresholdUp) ? WHITE : BLACK));  // 根据上下阈值转换为二值图像
+    for (uint16_t i = 0; i < src->width * src->height; i++) dst->data[i] = ((src->data[i] < thresholdDown) ? BLACK : ((src->data[i] <= thresholdUp) ? WHITE : BLACK));  // 根据上下阈值转换为二值图像
 }
 
 void rgb565toBinary(CroppedImage16* src, CroppedImage8* dst, uint8_t background, uint8_t r_min, uint8_t r_max, uint8_t g_min, uint8_t g_max, uint8_t b_min, uint8_t b_max)
@@ -161,11 +161,11 @@ void twoPassFourConnectedAreaProcess(BEAINF* obj)
 
     // 清零全局数组
     memset(g_labMap, 0, pixCount * sizeof(uint16_t));
-    memset(g_labelEquivalence, 0, 1024 * sizeof(uint16_t));
+    memset(g_labelEquivalence, 0, UNIFORMLY_PRE_ALLOCATED_BUFFER_SIZE * sizeof(uint16_t));
 
     for (uint16_t i = 0; i < pixCount; i++)
     {
-        if (lab >= 1024) continue;
+        if (lab >= UNIFORMLY_PRE_ALLOCATED_BUFFER_SIZE) continue;
 
         if (obj->data->data[i] == obj->background)
         {
@@ -181,20 +181,15 @@ void twoPassFourConnectedAreaProcess(BEAINF* obj)
             g_labMap[i] = ++lab;  // 新标签
             g_labelEquivalence[lab] = lab;
         }
-        else if (left && !up)
-        {
-            g_labMap[i] = left;  // 使用左边标签
-        }
-        else if (!left && up)
-        {
-            g_labMap[i] = up;  // 使用上边标签
-        }
+        else if (left && !up) g_labMap[i] = left;  // 使用左边标签
+        else if (!left && up) g_labMap[i] = up;    // 使用上边标签
         else
         {
-            // 两个标签合并 - 使用并查集防止环形引用
+            // 两个标签合并
             uint16_t minLabel = (left < up) ? left : up;
+            uint16_t maxLabel = (left < up) ? up : left;
             g_labMap[i] = minLabel;
-            g_labelEquivalence[(left < up) ? up : left] = minLabel;
+            if (minLabel < g_labelEquivalence[maxLabel]) g_labelEquivalence[maxLabel] = minLabel;
         }
     }
 
@@ -271,21 +266,11 @@ void twoPassFourConnectedAreaProcess(BEAINF* obj)
         // 上帧无灯：选择面积最大的信标
         else if (obj->selectedIndex == 100 || obj->sbea[obj->beaCount].beaArea > obj->sbea[obj->selectedIndex].beaArea) obj->selectedIndex = obj->beaCount;
 
-        // 边界检查，防止数组越界
-        if (obj->sbea[obj->beaCount].beaX < obj->data->width && obj->sbea[obj->beaCount].beaY < obj->data->height)
-        {
-            // 标记水平线
-            for (uint32_t x = 0; x < obj->data->width; x++)
-            {
-                obj->show->data[obj->sbea[obj->beaCount].beaY * obj->data->width + x] = cReverse(obj->background);
-            }
+        // 标记水平线
+        for (uint16_t x = 0; x < obj->data->width; x++) obj->show->data[obj->sbea[obj->beaCount].beaY * obj->data->width + x] = cReverse(obj->background);
 
-            // 标记垂直线
-            for (uint32_t y = 0; y < obj->data->height; y++)
-            {
-                obj->show->data[y * obj->data->width + obj->sbea[obj->beaCount].beaX] = cReverse(obj->background);
-            }
-        }
+        // 标记垂直线
+        for (uint16_t y = 0; y < obj->data->height; y++) obj->show->data[y * obj->data->width + obj->sbea[obj->beaCount].beaX] = cReverse(obj->background);
 
         obj->beaCount++;
     }
@@ -308,11 +293,10 @@ void twoPassEightConnectedAreaProcess(BEAINF* obj)
 
     // 清零全局数组
     memset(g_labMap, 0, pixCount * sizeof(uint16_t));
-    memset(g_labelEquivalence, 0, 1024 * sizeof(uint16_t));
-
+    memset(g_labelEquivalence, 0, UNIFORMLY_PRE_ALLOCATED_BUFFER_SIZE * sizeof(uint16_t));
     for (uint16_t i = 0; i < pixCount; i++)
     {
-        if (lab >= 1024) continue;
+        if (lab >= UNIFORMLY_PRE_ALLOCATED_BUFFER_SIZE) continue;
 
         if (obj->data->data[i] == obj->background)
         {
@@ -336,22 +320,21 @@ void twoPassEightConnectedAreaProcess(BEAINF* obj)
         {
             g_labMap[i] = ++lab;  // 新标签
             g_labelEquivalence[lab] = lab;
+            // printf("%u:%u\n", lab, g_labelEquivalence[lab]);
         }
-        else if (validCount == 1)
-        {
-            g_labMap[i] = validLabels[0];
-        }
+        else if (validCount == 1) g_labMap[i] = validLabels[0];
         else
         {
             // 找到最小标签
             uint16_t minLabel = validLabels[0];
-            for (uint16_t k = 0; k < validCount; k++) minLabel = (validLabels[k] < minLabel) ? validLabels[k] : minLabel;
+            for (uint16_t k = 1; k < validCount; k++) minLabel = (validLabels[k] < minLabel) ? validLabels[k] : minLabel;
 
             // 使用最小标签
             g_labMap[i] = minLabel;
 
             // 将所有其他标签指向最小标签
-            for (uint16_t k = 0; k < validCount; k++) g_labelEquivalence[validLabels[k]] = minLabel;
+            for (uint16_t k = 0; k < validCount; k++)
+                if (minLabel < g_labelEquivalence[validLabels[k]]) g_labelEquivalence[validLabels[k]] = minLabel;
         }
     }
 
@@ -386,16 +369,15 @@ void twoPassEightConnectedAreaProcess(BEAINF* obj)
         g_tempBea[curr_label - 1].beaArea++;
     }
 
-    // filter pass
+    //  filter pass
     memcpy(obj->show->data, obj->data->data, pixCount * sizeof(uint8_t));
     obj->beaCount = 0;          // 重置计数器
     obj->selectedIndex = 100;   // 100表示未选中任何区域
     float minDistance = -1.0f;  // 使用-1表示未初始化
-
     for (uint16_t i = 0; i < tempBeaCount; i++)
     {
         // 跳过空区域
-        if (g_tempBea[i].beaArea == 0 || obj->beaCount > 99) continue;
+        if (g_tempBea[i].beaArea == 0 || obj->beaCount >= 100) continue;
 
         // 计算质心
         g_tempBea[i].beaX = (uint32_t) ((float) g_tempBea[i].beaX / (float) g_tempBea[i].beaArea);
@@ -428,22 +410,11 @@ void twoPassEightConnectedAreaProcess(BEAINF* obj)
         // 上帧无灯：选择面积最大的信标
         else if (obj->selectedIndex == 100 || obj->sbea[obj->beaCount].beaArea > obj->sbea[obj->selectedIndex].beaArea) obj->selectedIndex = obj->beaCount;
 
+        // 标记水平线
+        for (uint16_t x = 0; x < obj->data->width; x++) obj->show->data[obj->sbea[obj->beaCount].beaY * obj->data->width + x] = cReverse(obj->background);
 
-        // 边界检查，防止数组越界
-        if (obj->sbea[obj->beaCount].beaX < obj->data->width && obj->sbea[obj->beaCount].beaY < obj->data->height)
-        {
-            // 标记水平线
-            for (uint16_t x = 0; x < obj->data->width; x++)
-            {
-                obj->show->data[obj->sbea[obj->beaCount].beaY * obj->data->width + x] = cReverse(obj->background);
-            }
-
-            // 标记垂直线
-            for (uint16_t y = 0; y < obj->data->height; y++)
-            {
-                obj->show->data[y * obj->data->width + obj->sbea[obj->beaCount].beaX] = cReverse(obj->background);
-            }
-        }
+        // 标记垂直线
+        for (uint16_t y = 0; y < obj->data->height; y++) obj->show->data[y * obj->data->width + obj->sbea[obj->beaCount].beaX] = cReverse(obj->background);
 
         obj->beaCount++;
     }

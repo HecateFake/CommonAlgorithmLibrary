@@ -21,6 +21,7 @@
  * @note 大小计算：188 × 120 = 22560 像素
  * @note 这个值确保能够处理MT9V03X摄像头的完整图像
  * @note 超过此大小的图像将被函数拒绝处理以防止缓冲区溢出
+ * @note 用户可以根据需要修改这个值的大小
  */
 #define UNIFORMLY_PRE_ALLOCATED_BUFFER_SIZE 22560
 
@@ -133,7 +134,7 @@ void morphDilate(CroppedImage8* src, CroppedImage8* kernel, CroppedImage8* dst, 
  * @param background 背景色值（BLACK/WHITE）
  *
  * @note 开运算 = 腐蚀 + 膨胀，主要用于去噪和分离对象
- * @warning 函数内部会分配临时内存，如果内存不足会直接返回
+ * @warning 函数内部会分配临时内存
  */
 void morphOpen(CroppedImage8* src, CroppedImage8* kernel, CroppedImage8* dst, uint8_t background);
 
@@ -149,7 +150,7 @@ void morphOpen(CroppedImage8* src, CroppedImage8* kernel, CroppedImage8* dst, ui
  * @param background 背景色值（BLACK/WHITE）
  *
  * @note 闭运算 = 膨胀 + 腐蚀，主要用于填洞和连接对象
- * @warning 函数内部会分配临时内存，如果内存不足会直接返回
+ * @warning 函数内部会分配临时内存
  */
 void morphClose(CroppedImage8* src, CroppedImage8* kernel, CroppedImage8* dst, uint8_t background);
 
@@ -355,8 +356,7 @@ void twoPassConnectedAreaInit(BEAINF* obj, uint8_t background, CroppedImage8* sr
  *
  * @warning 必须先调用 twoPassConnectedAreaInit() 进行初始化
  * @warning 函数会修改显示图像的内容
- * @warning 最大支持1024个不同的标签，超出可能导致未定义行为
- * @warning 如果内存分配失败，函数会提前返回
+ * @warning 最大支持UNIFORMLY_PRE_ALLOCATED_BUFFER_SIZE个不同的标签和最多100个信标，超出可能导致未定义行为
  *
  * @example
  *   BEAINF detector;
@@ -404,8 +404,7 @@ void twoPassFourConnectedAreaProcess(BEAINF* obj);
  *
  * @warning 必须先调用 twoPassConnectedAreaInit() 进行初始化
  * @warning 函数会修改显示图像的内容
- * @warning 最大支持1024个不同的标签，超出可能导致未定义行为
- * @warning 如果内存分配失败，函数会提前返回
+ * @warning 最大支持UNIFORMLY_PRE_ALLOCATED_BUFFER_SIZE个不同的标签和最多100个信标，超出可能导致未定义行为
  * @warning 八连通比四连通计算复杂度更高，处理时间更长
  *
  * @example
