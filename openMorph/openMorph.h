@@ -364,9 +364,9 @@ void twoPassConnectedAreaInit(BEAINF* obj, uint8_t background, CroppedImage8* sr
  *   twoPassFourConnectedAreaProcess(&detector);
  *   printf("检测到 %d 个区域\n", detector.beaCount);
  *   if(detector.selectedIndex != 100) {
- *       printf("选中信标: 质心(%d,%d), 面积=%d\n", 
- *              detector.sbea[detector.selectedIndex].beaX, 
- *              detector.sbea[detector.selectedIndex].beaY, 
+ *       printf("选中信标: 质心(%d,%d), 面积=%d\n",
+ *              detector.sbea[detector.selectedIndex].beaX,
+ *              detector.sbea[detector.selectedIndex].beaY,
  *              detector.sbea[detector.selectedIndex].beaArea);
  *   }
  *   for(int i = 0; i < detector.beaCount; i++) {
@@ -413,9 +413,9 @@ void twoPassFourConnectedAreaProcess(BEAINF* obj);
  *   twoPassEightConnectedAreaProcess(&detector);
  *   printf("检测到 %d 个区域\n", detector.beaCount);
  *   if(detector.selectedIndex != 100) {
- *       printf("选中信标: 质心(%d,%d), 面积=%d\n", 
- *              detector.sbea[detector.selectedIndex].beaX, 
- *              detector.sbea[detector.selectedIndex].beaY, 
+ *       printf("选中信标: 质心(%d,%d), 面积=%d\n",
+ *              detector.sbea[detector.selectedIndex].beaX,
+ *              detector.sbea[detector.selectedIndex].beaY,
  *              detector.sbea[detector.selectedIndex].beaArea);
  *   }
  *   for(int i = 0; i < detector.beaCount; i++) {
